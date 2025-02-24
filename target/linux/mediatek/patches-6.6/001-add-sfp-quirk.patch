@@ -1,0 +1,11 @@
+--- a/drivers/net/phy/sfp.c
++++ b/drivers/net/phy/sfp.c
+@@ -441,2 +441,6 @@ static const struct sfp_quirk sfp_quirks[] = {
+        SFP_QUIRK_F("OEM", "RTSFP-10G", sfp_fixup_rollball_cc),
++       // DFP-34X-2C2 GPON ONU supports 2500base-X
++       SFP_QUIRK_M("OEM", "DFP-34X-2C2", sfp_quirk_2500basex),
++       SFP_QUIRK_M("OEM", "XPONONUSTICK", sfp_quirk_2500basex),
++       SFP_QUIRK_M("OEM", "GPONOLTC+++", sfp_quirk_2500basex),
+        SFP_QUIRK_F("Turris", "RTSFP-10", sfp_fixup_rollball),
+        SFP_QUIRK_F("Turris", "RTSFP-10G", sfp_fixup_rollball),
+ };
