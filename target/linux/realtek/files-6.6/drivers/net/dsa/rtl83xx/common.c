@@ -339,6 +339,22 @@ static int __init rtl83xx_mdio_probe(struct rtl838x_switch_priv *priv)
 			continue;
 
 		phy_node = of_parse_phandle(dn, "phy-handle", 0);
+
+		/* Major cleanup is needed...
+		 *
+		 * We use virtual "phys" as containers for mac
+		 * properties like the SERDES channel, even for simple
+		 * SFP slots.  "pseudo-phy-handle" is a hack to
+		 * support this construct and still allow pluggable
+		 * phys.
+		 *
+		 * The SERDES map is most likely static by port number
+		 * for each SoC.  No need to put that into the device
+		 * tree in the first place.
+		 */
+		if (!phy_node)
+			phy_node = of_parse_phandle(dn, "pseudo-phy-handle", 0);
+
 		if (!phy_node) {
 			if (pn != priv->cpu_port)
 				dev_err(priv->dev, "Port node %d misses phy-handle\n", pn);
@@ -813,12 +829,12 @@ static int rtl83xx_l3_nexthop_update(struct rtl838x_switch_priv *priv,  __be32 i
 	}
 
 	rhl_for_each_entry_rcu(r, tmp, list, linkage) {
-		pr_info("%s: Setting up fwding: ip %pI4, GW mac %016llx\n",
+		pr_debug("%s: Setting up fwding: ip %pI4, GW mac %016llx\n",
 			__func__, &ip_addr, mac);
 
 		/* Reads the ROUTING table entry associated with the route */
 		priv->r->route_read(r->id, r);
-		pr_info("Route with id %d to %pI4 / %d\n", r->id, &r->dst_ip, r->prefix_len);
+		pr_debug("Route with id %d to %pI4 / %d\n", r->id, &r->dst_ip, r->prefix_len);
 
 		r->nh.mac = r->nh.gw = mac;
 		r->nh.port = priv->port_ignore;
@@ -865,7 +881,7 @@ static int rtl83xx_l3_nexthop_update(struct rtl838x_switch_priv *priv,  __be32 i
 			priv->r->pie_rule_add(priv, &r->pr);
 		} else {
 			int pkts = priv->r->packet_cntr_read(r->pr.packet_cntr);
-			pr_info("%s: total packets: %d\n", __func__, pkts);
+			pr_debug("%s: total packets: %d\n", __func__, pkts);
 
 			priv->r->pie_rule_write(priv, r->pr.id, &r->pr);
 		}
@@ -1702,12 +1718,10 @@ err_register_nb:
 	return err;
 }
 
-static int rtl83xx_sw_remove(struct platform_device *pdev)
+static void rtl83xx_sw_remove(struct platform_device *pdev)
 {
 	/* TODO: */
 	pr_debug("Removing platform driver for rtl83xx-sw\n");
-
-	return 0;
 }
 
 static const struct of_device_id rtl83xx_switch_of_ids[] = {
@@ -1720,7 +1734,7 @@ MODULE_DEVICE_TABLE(of, rtl83xx_switch_of_ids);
 
 static struct platform_driver rtl83xx_switch_driver = {
 	.probe = rtl83xx_sw_probe,
-	.remove = rtl83xx_sw_remove,
+	.remove_new = rtl83xx_sw_remove,
 	.driver = {
 		.name = "rtl83xx-switch",
 		.pm = NULL,
