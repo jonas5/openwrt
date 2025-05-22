@@ -1,0 +1,9 @@
+--- a/drivers/net/phy/sfp.c
++++ b/drivers/net/phy/sfp.c
+@@ -750,6 +750,7 @@
+ 	SFP_QUIRK_M("KEYOPTICS", "KOS-3132-I3SL", sfp_quirk_keyoptics_kos_3132_i3sl),
+ 	SFP_QUIRK_M("MikroTik", "S+DA0001", sfp_quirk_mikrotik_s_da0001),
+ 	SFP_QUIRK_M("Molex", "1061800001", sfp_quirk_molex_1061800001),
++	SFP_QUIRK_M("OEM", "XPONONUSTICK", sfp_quirk_2500basex),
+ 	SFP_QUIRK_M("ZYXEL", "PMG3000-D20B", sfp_quirk_zyxel_pmg3000_d20b),
+ };
